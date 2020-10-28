@@ -72,60 +72,45 @@ class Slideshow:
     TRANSITION_DELAY = 4000         # Autoplay time between pictures (in milliseconds)
     IS_TRANSITION_FORWARD = True    # Autoplay direction (forward or backward)
     PLAY = True                     # Autoplay (Play/Pause) bool
-    IS_ACROSS_HIKES = False         # Is rotary encoder pressed down
-    ROTARY_COUNT = 0                # Used exclusively for testing rotary encoder steps
+    # IS_ACROSS_HIKES = False         # Is rotary encoder pressed down
+    # ROTARY_COUNT = 0                # Used exclusively for testing rotary encoder steps
 
     def __init__(self, win):
         # Setup the window
         self.window = win
-        self.window.title("Capra Slideshow")
+        self.window.title("Explorer Fader")
         self.window.geometry("1280x720")
         self.window.configure(background='purple')
         self.canvas = Canvas(root, width=1280, height=720, background="#888", highlightthickness=0)
         self.canvas.pack(expand='yes', fill='both')
-
-        # Hardware control events
         self.window.bind('<Key>', self.keypress)
-
-        # Initialization for database implementation
-        # self.sql_controller = SQLController(database=DB)
-        # self.picture_starter = self.sql_controller.get_first_time_picture_in_hike(10)
-        # self.picture_starter = self.sql_controller.get_first_time_picture_in_hike_with_offset(10, OFFSET)
-        # self.picture = self.sql_controller.next_time_picture_in_hike(self.picture_starter)
-
-        self.picture_starter = "first picture"
-        self.picture = "next picture in directory"
 
         # Initialization for images and associated properties
         self.alpha = 0
 
+        # Get list of all relevant files
         self.fileList = self.getFileList()
-        print(self.fileList)
+        self.index = 0
+        # print(self.fileList)
+        # print(len(self.fileList))
 
-        # Add the photo to the screen
-        self.current_raw_mid = Image.open(self.fileList[0], 'r')
-        self.next_raw_mid = Image.open(self.fileList[1], 'r')
+        # Add the first photo to the screen
+        self.current_raw_mid = Image.open(self.fileList[self.index], 'r')
+        if self.index + 1 >= len(self.fileList):
+            self.next_raw_mid = Image.open(self.fileList[0], 'r')
+            self.index = 0
+        else:
+            self.next_raw_mid = Image.open(self.fileList[self.index+1], 'r')
+            self.index = self.index + 1
 
         self.display_photo_image_mid = ImageTk.PhotoImage(self.current_raw_mid)
         self.image_label_mid = Label(master=self.canvas, image=self.display_photo_image_mid, borderwidth=0)
         self.image_label_mid.pack(side='right', fill='both', expand='yes')
 
-        # for filename in os.listdir(DIR):
-        #     print(filename)
-
-        # for entry in os.scandir(DIR):
-        #     if (entry.path.endswith(".jpg") or entry.path.endswith(".png")) and entry.is_file():
-        #         print(entry.path)
-
-        # for filename in os.listdir(DIR):
-        #     if filename.endswith(".jpg"):
-        #         print(os.path.join(DIR, filename))
-        #         continue
-        #     else:
-        #         continue
-
-        # root.after(15, func=self.fade_image)
+        root.after(15, func=self.fade_image)
         # root.after(self.TRANSITION_DELAY, func=self.auto_play_slideshow)
+
+
 
 
 
@@ -174,32 +159,38 @@ class Slideshow:
         # root.after(0, func=self.check_accelerometer)
         # root.after(10, func=self.update_text)
 
-
         # root.after(0, func=self.check_mode)
 
     def getFileList(self):
         directorypath = filedialog.askdirectory(title="Select directory of photos")
-        # print(directorypath)
 
         fileList = []
         for file in os.listdir(directorypath):
             if file.endswith(".jpg"):
                 fullpath = os.path.join(directorypath, file)
                 fileList.append(fullpath)
-
         fileList.sort()
 
         return fileList
 
-    def _build_next_raw_images(self, next_picture):
-        # print('build images')
-        # self.next_raw_top = Image.open(self._build_filename(next_picture.camera1), 'r')
-        self.next_raw_mid = Image.open(self._build_filename(next_picture.camera2), 'r')
-        # self.next_raw_mid = Image.open(self._build_filename(next_picture.camera3), 'r')
-        # self.next_raw_bot = Image.open(blank_path, 'r')
+    def nextPicture(self):
+        print('next')
+        self.alpha = .2
 
-    def _build_filename(self, end_of_path: str) -> str:
-        return '{p}{e}'.format(p=PATH, e=end_of_path)
+        # self.current_raw_mid = self.next_raw_mid
+        if self.index + 1 >= len(self.fileList):
+            self.index = 0
+            self.next_raw_mid = Image.open(self.fileList[self.index], 'r')
+        else:
+            # TODO - can simplify this logic
+            self.next_raw_mid = Image.open(self.fileList[self.index + 1], 'r')
+            self.index += 1
+
+    def previousPicture(self):
+        print('previous')
+
+    # def _build_filename(self, end_of_path: str) -> str:
+    #     return '{p}{e}'.format(p=PATH, e=end_of_path)
         # return '{e}'.format(e=end_of_path)
 
     # Loops for the life of the program, fading between the current image and the NEXT image
@@ -225,9 +216,12 @@ class Slideshow:
             # self.display_photo_image_bot = ImageTk.PhotoImage(self.current_raw_bot)
             # self.image_label_bot.configure(image=self.display_photo_image_bot)
 
-            self.alpha = self.alpha + 0.0417
-            # self.alpha = self.alpha + 0.0209
-        root.after(83, self.fade_image)
+            # self.alpha = self.alpha + 0.0417
+            self.alpha = self.alpha + 0.0209
+        # TODO - Change this value to affect the spee of the fade
+        # Lower the number the quicker the fade
+        # Higher the number the slower the fade
+        root.after(30, self.fade_image)
 
     # def update_text(self):
     #     self.determine_switch_mode()
@@ -279,22 +273,27 @@ class Slideshow:
         root.after(self.TRANSITION_DELAY, self.auto_play_slideshow)
 
     def keypress(self, event):
-        if event.keycode == 114:  # Right / Next
-            # print('right')
-            self.picture = self.sql_controller.get_next_picture(
-                    current_picture=self.picture, mode=self.MODE, is_across_hikes=self.IS_ACROSS_HIKES)
-            self._build_next_raw_images(self.picture)
-            self.alpha = .2                     # Resets amount of fade between pictures
-            self.picture.print_obj()            # This is a print()
-        elif event.keycode == 113:  # Left / Previous
-            # print('left')
-            self.picture = self.sql_controller.get_previous_picture(
-                    current_picture=self.picture, mode=self.MODE, is_across_hikes=self.IS_ACROSS_HIKES)
-            self._build_next_raw_images(self.picture)
-            self.alpha = .2                     # Resets amount of fade between pictures
-            self.picture.print_obj()            # This is a print()
+        if event.keycode == 8189699:  # Right / Next 114
+            print('right')
+            self.nextPicture()
+            # self.fade_image()
+            # self.picture = self.sql_controller.get_next_picture(
+            #         current_picture=self.picture, mode=self.MODE, is_across_hikes=self.IS_ACROSS_HIKES)
+            # self._build_next_raw_images(self.picture)
+            # self.alpha = .2                     # Resets amount of fade between pictures
+            # self.picture.print_obj()            # This is a print()
+        elif event.keycode == 8124162:  # Left / Previous 113
+            print('left')
+            # self.previousPicture()
+
+            # self.picture = self.sql_controller.get_previous_picture(
+            #         current_picture=self.picture, mode=self.MODE, is_across_hikes=self.IS_ACROSS_HIKES)
+            # self._build_next_raw_images(self.picture)
+            # self.alpha = .2                     # Resets amount of fade between pictures
+            # self.picture.print_obj()            # This is a print()
         else:
             print(event)
+            print('yo')
 
 
 # Create the root window
