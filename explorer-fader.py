@@ -1,20 +1,8 @@
 #!/usr/bin/env python3
 
 # ------------------------------------------------------------------------------
-#  Slideshow program for the Explorer projector unit. Displays pictures and
-#  allows navigation through them based on 3 modes: time, altitude, and color
+#  Manual slideshow program for creating specific scene for the Capra videos
 # ------------------------------------------------------------------------------
-
-# from classes.capra_data_types import Picture, Hike
-# from classes.sql_controller import SQLController
-# from classes.sql_statements import SQLStatements
-# from adafruit_mcp3xxx.analog_in import AnalogIn  # Reading values from MCP3008
-# from gpiozero import Button             # Rotary encoder, detected as button
-# from RPi import GPIO                    # GPIO pin detection for Raspberry Pi
-# import adafruit_mcp3xxx.mcp3008 as MCP  # Interfacing with MCP3008
-# import board                            # Dependancy of MCP3008
-# import busio                            # Dependancy of MCP3008
-# import digitalio                        # Dependancy of MCP3008
 
 # Imports
 from PIL import ImageTk, Image          # Pillow image functions
@@ -22,49 +10,6 @@ from tkinter import Tk, Canvas, Label, filedialog   # Tkinter, GUI framework in 
 from time import sleep                  # Sleep
 import datetime, math, os
 
-# Database location
-# DB = '/home/pi/Pictures/capra-projector.db'
-# PATH = '/home/pi/Pictures'
-PATH = '/Users/Jordan/Developer/eds/capra-video-tools/pictures/'
-
-'''
-class Application():
-    def __init__(self, master=None):
-        tk.Frame.__init__(self, master)
-        self.grid()
-        self.createWidgets()
-
-    def browse(self):
-
-        filename = filedialog.askdirectory()
-
-        self.filepath.config(state="normal")
-        self.filepath.delete(0, tk.END)
-        self.filepath.insert(tk.END, filename)
-        self.filepath.config(state="disabled")
-
-
-class VideoGenerator():
-    def __init__(self, filepath, framerate):
-        self.filepath = filepath
-        self.framerate = framerate
-
-        # make director to save video into
-        dir = path.join(self.filepath, 'video')
-        if not path.exists(dir):
-            mkdir(dir)
-
-    def generate_video(self):
-        # get stacked images
-        image_filepath = path.join(self.filepath, 'stacked', '*.jpg')
-        files = glob.glob(image_filepath)
-        files = natsorted(files)
-
-        video = ImageSequenceClip(files, fps=self.framerate)
-        video.write_videofile(
-            path.join(self.filepath, 'video', 'capra_magic.mp4'), codec='mpeg4', audio=False)
-        video.close()
-'''
 
 # Slideshow class which is the main class that runs and is listening for events
 class Slideshow:
@@ -98,70 +43,18 @@ class Slideshow:
         self.current_raw_mid = Image.open(self.fileList[self.index], 'r')
         self.next_raw_mid = Image.open(self.fileList[self.index], 'r')
 
-        # if self.index + 1 >= len(self.fileList):
-        #     self.next_raw_mid = Image.open(self.fileList[0], 'r')
-        #     self.index = 0
-        # else:
-        #     self.next_raw_mid = Image.open(self.fileList[self.index+1], 'r')
-        #     self.index = self.index + 1
-
         self.display_photo_image_mid = ImageTk.PhotoImage(self.current_raw_mid)
         self.image_label_mid = Label(master=self.canvas, image=self.display_photo_image_mid, borderwidth=0)
         self.image_label_mid.pack(side='right', fill='both', expand='yes')
 
-        root.after(30, func=self.fade_image)
-        # root.after(self.TRANSITION_DELAY, func=self.auto_play_slideshow)
-
-
-
-
-
-        # NOT NEEDED ANYMORE
-        # Initialize current and next images
-        # self.current_raw_top = Image.open(self._build_filename(self.picture_starter.camera1), 'r')
-        # self.next_raw_top = Image.open(self._build_filename(self.picture.camera1), 'r')
-
-
-        # self.current_raw_bot = Image.open(blank_path, 'r')
-        # self.next_raw_bot = Image.open(blank_path, 'r')
-        # self.current_raw_bot = Image.open(self._build_filename(self.picture_starter.camera3), 'r')
-        # self.next_raw_bot = Image.open(self._build_filename(self.picture.camera3), 'r')
-
-        # Display the first 3 images to the screen
-        # self.display_photo_image_top = ImageTk.PhotoImage(self.current_raw_top)
-        # self.image_label_top = Label(master=self.canvas, image=self.display_photo_image_top, borderwidth=0)
-        # self.image_label_top.pack(side='right', fill='both', expand='yes')
-        # self.image_label_top.place(x=20, rely=0.0, anchor='nw')
-
-
-
-
-
-        # self.image_label_mid.place(x=20, y=405, anchor='nw')
-
-        # self.display_photo_image_bot = ImageTk.PhotoImage(self.current_raw_bot)
-        # self.image_label_bot = Label(master=self.canvas, image=self.display_photo_image_bot, borderwidth=0)
-        # self.image_label_bot.pack(side='right', fill='both', expand='yes')
-        # self.image_label_bot.place(x=20, y=810, anchor='nw')
-
         # Hike labels
-        # self.label_mode = Label(self.canvas, text='Modes: ')
-        # self.label_hike = Label(self.canvas, text='Hike: ')
         # self.label_index = Label(self.canvas, text='Index: ')
-        # self.label_alt = Label(self.canvas, text='Altitude: ')
-        # self.label_date = Label(self.canvas, text='Date: ')
-
-        # self.label_mode.place(relx=1.0, y= 0, anchor='ne')
-        # self.label_hike.place(relx=1.0, y=22, anchor='ne')
-        # self.label_index.place(relx=1.0, y=44, anchor='ne')
-        # self.label_alt.place(relx=1.0, y=66, anchor='ne')
-        # self.label_date.place(relx=1.0, y=88, anchor='ne')
+        # self.label_index.place(relx=1.0, y=20, anchor='ne')
 
         # Start background threads which will continue for life of the class
-        # root.after(0, func=self.check_accelerometer)
+        root.after(30, func=self.fade_image)
+        # root.after(self.TRANSITION_DELAY, func=self.auto_play_slideshow)
         # root.after(10, func=self.update_text)
-
-        # root.after(0, func=self.check_mode)
 
     def getFileList(self):
         directorypath = filedialog.askdirectory(title="Select directory of photos")
@@ -177,7 +70,7 @@ class Slideshow:
 
     def nextPicture(self):
         print('next')
-        self.alpha = .2
+        self.alpha = 0.1  # Resets amount of fade between pictures
         if self.index + 1 >= len(self.fileList):
             self.index = 0
         else:
@@ -186,75 +79,37 @@ class Slideshow:
 
     def previousPicture(self):
         print('previous')
-        self.alpha = .2
+        self.alpha = 0.3  # Resets amount of fade between pictures
         if self.index - 1 < 0:
             self.index = len(self.fileList) - 1
         else:
             self.index -= 1
         self.next_raw_mid = Image.open(self.fileList[self.index], 'r')
 
-    # def _build_filename(self, end_of_path: str) -> str:
-    #     return '{p}{e}'.format(p=PATH, e=end_of_path)
-        # return '{e}'.format(e=end_of_path)
-
     # Loops for the life of the program, fading between the current image and the NEXT image
     def fade_image(self):
         # print('Fading the image at alpha of: ', self.alpha)
         # print(time.time())
         if self.alpha < 1.0:
-            # Top image
-            # self.current_raw_top = Image.blend(self.current_raw_top, self.next_raw_top, self.alpha)
-            # self.current_raw_top = self.next_raw_top
-            # self.display_photo_image_top = ImageTk.PhotoImage(self.current_raw_top)
-            # self.image_label_top.configure(image=self.display_photo_image_top)
-
             # Middle image
             self.current_raw_mid = Image.blend(self.current_raw_mid, self.next_raw_mid, self.alpha)
             self.display_photo_image_mid = ImageTk.PhotoImage(self.current_raw_mid)
             self.image_label_mid.configure(image=self.display_photo_image_mid)
 
-            # Bottom image
-            # self.current_raw_bot = Image.blend(self.current_raw_bot, self.next_raw_bot, self.alpha)
-            # self.current_raw_bot = self.next_raw_bot
-            # self.display_photo_image_bot = ImageTk.PhotoImage(self.current_raw_bot)
-            # self.image_label_bot.configure(image=self.display_photo_image_bot)
-
-            self.alpha = self.alpha + 0.0417
+            # TODO - how long the image hangs around
+            # Lower the longer a piece stays on screen
+            # Higher the faster the bit of an image leaves
+            # self.alpha = self.alpha + 0.0417
             # self.alpha = self.alpha + 0.0209
-            # self.alpha = self.alpha + 0.015
+            self.alpha = self.alpha + 0.001
         # TODO - Change this value to affect the spee of the fade
         # Lower the number the quicker the fade
         # Higher the number the slower the fade
-        root.after(20, self.fade_image)
+        root.after(40, self.fade_image)
 
     # def update_text(self):
-    #     self.determine_switch_mode()
-    #     if self.MODE == 0:
-    #         mode = 'Mode: Time'
-    #     elif self.MODE == 1:
-    #         mode = 'Mode: Altitude'
-    #     elif self.MODE == 2:
-    #         mode = 'Mode: Color'
-    #     else:
-    #         mode = 'Mode: ERROR'
-
-    #     hike = 'Hike {n}'.format(n=self.picture.hike_id)
-
-    #     hike_sz = self.sql_controller.get_size_of_hike(self.picture)
     #     index = '{x} / {n}'.format(x=self.picture.index_in_hike, n=hike_sz)
-
-    #     altitude = '{a}m'.format(a=self.picture.altitude)
-
-    #     value = datetime.datetime.fromtimestamp(self.picture.time)
-    #     date_time = value.strftime('%-I:%M:%S%p on %d %b, %Y')
-    #     date = '{d}'.format(d=date_time)
-
-    #     self.label_mode.configure(text=mode)
-    #     self.label_hike.configure(text=hike)
     #     self.label_index.configure(text=index)
-    #     self.label_alt.configure(text=altitude)
-    #     self.label_date.configure(text=date)
-
     #     root.after(500, self.update_text)
 
     # TODO - track down where the random number being printed to the terminal is coming from
@@ -279,25 +134,10 @@ class Slideshow:
     def keypress(self, event):
         if event.keycode == 8189699:  # Right/Next  TODO: 114 - alternative code
             self.nextPicture()
-            # self.fade_image()
-
-            # self.fade_image()
-            # self.picture = self.sql_controller.get_next_picture(
-            #         current_picture=self.picture, mode=self.MODE, is_across_hikes=self.IS_ACROSS_HIKES)
-            # self._build_next_raw_images(self.picture)
-            # self.alpha = .2                     # Resets amount of fade between pictures
-            # self.picture.print_obj()            # This is a print()
         elif event.keycode == 8124162:  # Left/Previous  TODO: 113 - alternative code
             self.previousPicture()
-
-            # self.picture = self.sql_controller.get_previous_picture(
-            #         current_picture=self.picture, mode=self.MODE, is_across_hikes=self.IS_ACROSS_HIKES)
-            # self._build_next_raw_images(self.picture)
-            # self.alpha = .2                     # Resets amount of fade between pictures
-            # self.picture.print_obj()            # This is a print()
         else:
             print(event)
-            print('yo')
 
 
 # Create the root window
