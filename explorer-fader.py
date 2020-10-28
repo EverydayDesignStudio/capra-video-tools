@@ -96,18 +96,20 @@ class Slideshow:
 
         # Add the first photo to the screen
         self.current_raw_mid = Image.open(self.fileList[self.index], 'r')
-        if self.index + 1 >= len(self.fileList):
-            self.next_raw_mid = Image.open(self.fileList[0], 'r')
-            self.index = 0
-        else:
-            self.next_raw_mid = Image.open(self.fileList[self.index+1], 'r')
-            self.index = self.index + 1
+        self.next_raw_mid = Image.open(self.fileList[self.index], 'r')
+
+        # if self.index + 1 >= len(self.fileList):
+        #     self.next_raw_mid = Image.open(self.fileList[0], 'r')
+        #     self.index = 0
+        # else:
+        #     self.next_raw_mid = Image.open(self.fileList[self.index+1], 'r')
+        #     self.index = self.index + 1
 
         self.display_photo_image_mid = ImageTk.PhotoImage(self.current_raw_mid)
         self.image_label_mid = Label(master=self.canvas, image=self.display_photo_image_mid, borderwidth=0)
         self.image_label_mid.pack(side='right', fill='both', expand='yes')
 
-        root.after(15, func=self.fade_image)
+        root.after(30, func=self.fade_image)
         # root.after(self.TRANSITION_DELAY, func=self.auto_play_slideshow)
 
 
@@ -176,18 +178,20 @@ class Slideshow:
     def nextPicture(self):
         print('next')
         self.alpha = .2
-
-        # self.current_raw_mid = self.next_raw_mid
         if self.index + 1 >= len(self.fileList):
             self.index = 0
-            self.next_raw_mid = Image.open(self.fileList[self.index], 'r')
         else:
-            # TODO - can simplify this logic
-            self.next_raw_mid = Image.open(self.fileList[self.index + 1], 'r')
             self.index += 1
+        self.next_raw_mid = Image.open(self.fileList[self.index], 'r')
 
     def previousPicture(self):
         print('previous')
+        self.alpha = .2
+        if self.index - 1 < 0:
+            self.index = len(self.fileList) - 1
+        else:
+            self.index -= 1
+        self.next_raw_mid = Image.open(self.fileList[self.index], 'r')
 
     # def _build_filename(self, end_of_path: str) -> str:
     #     return '{p}{e}'.format(p=PATH, e=end_of_path)
@@ -206,7 +210,6 @@ class Slideshow:
 
             # Middle image
             self.current_raw_mid = Image.blend(self.current_raw_mid, self.next_raw_mid, self.alpha)
-            # self.current_raw_mid = self.next_raw_mid
             self.display_photo_image_mid = ImageTk.PhotoImage(self.current_raw_mid)
             self.image_label_mid.configure(image=self.display_photo_image_mid)
 
@@ -216,12 +219,13 @@ class Slideshow:
             # self.display_photo_image_bot = ImageTk.PhotoImage(self.current_raw_bot)
             # self.image_label_bot.configure(image=self.display_photo_image_bot)
 
-            # self.alpha = self.alpha + 0.0417
-            self.alpha = self.alpha + 0.0209
+            self.alpha = self.alpha + 0.0417
+            # self.alpha = self.alpha + 0.0209
+            # self.alpha = self.alpha + 0.015
         # TODO - Change this value to affect the spee of the fade
         # Lower the number the quicker the fade
         # Higher the number the slower the fade
-        root.after(30, self.fade_image)
+        root.after(20, self.fade_image)
 
     # def update_text(self):
     #     self.determine_switch_mode()
@@ -273,18 +277,18 @@ class Slideshow:
         root.after(self.TRANSITION_DELAY, self.auto_play_slideshow)
 
     def keypress(self, event):
-        if event.keycode == 8189699:  # Right / Next 114
-            print('right')
+        if event.keycode == 8189699:  # Right/Next  TODO: 114 - alternative code
             self.nextPicture()
+            # self.fade_image()
+
             # self.fade_image()
             # self.picture = self.sql_controller.get_next_picture(
             #         current_picture=self.picture, mode=self.MODE, is_across_hikes=self.IS_ACROSS_HIKES)
             # self._build_next_raw_images(self.picture)
             # self.alpha = .2                     # Resets amount of fade between pictures
             # self.picture.print_obj()            # This is a print()
-        elif event.keycode == 8124162:  # Left / Previous 113
-            print('left')
-            # self.previousPicture()
+        elif event.keycode == 8124162:  # Left/Previous  TODO: 113 - alternative code
+            self.previousPicture()
 
             # self.picture = self.sql_controller.get_previous_picture(
             #         current_picture=self.picture, mode=self.MODE, is_across_hikes=self.IS_ACROSS_HIKES)
